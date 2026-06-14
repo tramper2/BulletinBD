@@ -915,6 +915,32 @@
     const passwordPromptForm = document.getElementById('password-prompt-form');
     const promptPasswordInput = document.getElementById('prompt-password-input');
 
+    // Update board title and subtitle dynamically based on slug
+    function updateBoardHeader() {
+      const titleEl = document.getElementById('widget-board-title');
+      const subtitleEl = document.getElementById('widget-board-subtitle');
+      if (!titleEl || !subtitleEl) return;
+
+      const slug = ARTRACTIVE_CONFIG.BOARD_SLUG;
+      if (slug === 'notice') {
+        titleEl.textContent = '공지사항';
+        subtitleEl.textContent = '중요한 소식과 안내사항을 확인하세요.';
+      } else if (slug === 'gallery') {
+        titleEl.textContent = '갤러리';
+        subtitleEl.textContent = '사진과 동영상을 자유롭게 공유하세요.';
+      } else if (slug === 'qna') {
+        titleEl.textContent = '질문과 답변 (Q&A)';
+        subtitleEl.textContent = '궁금한 점을 자유롭게 질문하고 답변받으세요.';
+      } else if (slug === 'default') {
+        titleEl.textContent = '자유게시판';
+        subtitleEl.textContent = '다양한 생각과 일상을 공유하는 공간입니다.';
+      } else {
+        const capitalized = slug.charAt(0).toUpperCase() + slug.slice(1);
+        titleEl.textContent = `${capitalized} 게시판`;
+        subtitleEl.textContent = `이곳은 ${slug} 게시판입니다.`;
+      }
+    }
+
     // --- Core Initialization ---
     document.addEventListener('DOMContentLoaded', () => {
       // Default configurations override checking
@@ -926,6 +952,7 @@
         return;
       }
       
+      updateBoardHeader();
       loadPosts();
       setupEventListeners();
     });
