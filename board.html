@@ -868,7 +868,7 @@
       // API 서버 URL (GitHub Pages 배포를 위해 고정)
       SERVER_URL: 'https://apiservice.artractive.pe.kr',
       // 관리자 콘솔에서 발급받은 프로젝트의 API Key
-      API_KEY: urlParams.get('key') || 'art_a75663ff42df097c882685202d6c89e04d6a68143e9d0695', 
+      API_KEY: urlParams.get('key') || '', 
       // 이 정적 게시판 위젯이 바라볼 고유 게시판 Slug
       BOARD_SLUG: urlParams.get('slug') || 'default'
     };
@@ -920,6 +920,11 @@
       // Default configurations override checking
       // If deployed statically or running locally, print configuration log
       console.log('Artractive Board Widget initialized with config:', ARTRACTIVE_CONFIG);
+      
+      if (!ARTRACTIVE_CONFIG.API_KEY) {
+        showErrorState('API Key가 입력되지 않았습니다. 상단 테스트 설정에서 API Key를 입력하고 [설정 적용]을 눌러주세요.');
+        return;
+      }
       
       loadPosts();
       setupEventListeners();
