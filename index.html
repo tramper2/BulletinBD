@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Artractive Bulletin Board Integration Test Suite</title>
+  <!-- Google Fonts Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css">
+  
+  <style>
+    :root {
+      --font-primary: 'Inter', sans-serif;
+      --font-title: 'Outfit', sans-serif;
+      
+      --color-bg-dark: #070a13;
+      --color-bg-card: rgba(17, 24, 39, 0.7);
+      --color-primary: #8b5cf6;
+      --color-primary-hover: #7c3aed;
+      --color-primary-glow: rgba(139, 92, 246, 0.25);
+      --color-secondary: #1f2937;
+      --color-secondary-hover: #374151;
+      
+      --color-accent-pink: #ec4899;
+      --color-accent-blue: #3b82f6;
+      
+      --color-text: #f3f4f6;
+      --color-text-muted: #9ca3af;
+      
+      --glass-border: rgba(255, 255, 255, 0.07);
+      --glass-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-bg-dark);
+      color: var(--color-text);
+      font-family: var(--font-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Ambient background glows */
+    .ambient-glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      z-index: -1;
+      filter: blur(100px);
+      pointer-events: none;
+      opacity: 0.45;
+    }
+    .glow-purple {
+      top: -200px;
+      left: -100px;
+      background: radial-gradient(circle, var(--color-primary-glow) 0%, rgba(0,0,0,0) 70%);
+    }
+    .glow-pink {
+      bottom: -200px;
+      right: -100px;
+      background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(0,0,0,0) 70%);
+    }
+
+    /* Header styling */
+    header {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 1.25rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7, 10, 19, 0.8);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand i {
+      font-size: 1.8rem;
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent-pink) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand h1 {
+      font-family: var(--font-title);
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #ffffff 50%, var(--color-text-muted) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge-live {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10b981;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .badge-live::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: #10b981;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    /* Main workspace layout */
+    .container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      height: calc(100vh - 73px);
+      overflow: hidden;
+    }
+
+    /* Sidebar controls */
+    .sidebar {
+      background: rgba(10, 15, 30, 0.6);
+      border-right: 1px solid var(--glass-border);
+      padding: 1.75rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .section-title {
+      font-family: var(--font-title);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--color-text-muted);
+      margin-bottom: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Nav buttons */
+    .board-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1.1rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      font-family: var(--font-primary);
+      font-weight: 500;
+      text-align: left;
+      transition: var(--transition-smooth);
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .nav-btn.active {
+      background: var(--color-primary-glow);
+      color: #c084fc;
+      border-color: rgba(139, 92, 246, 0.4);
+      box-shadow: 0 4px 20px rgba(139, 92, 246, 0.15);
+    }
+
+    .nav-btn i {
+      font-size: 1rem;
+    }
+
+    .nav-btn span.slug-tag {
+      font-size: 0.75rem;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-sm);
+      font-family: monospace;
+      color: var(--color-text-muted);
+    }
+
+    .nav-btn.active span.slug-tag {
+      background: rgba(139, 92, 246, 0.2);
+      color: #d8b4fe;
+    }
+
+    /* Configuration Panel Card */
+    .glass-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      box-shadow: var(--glass-glow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: var(--color-text-muted);
+    }
+
+    .form-control {
+      width: 100%;
+      background: rgba(7, 10, 19, 0.6);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 0.6rem 0.8rem;
+      color: white;
+      font-family: monospace;
+      font-size: 0.85rem;
+      transition: var(--transition-smooth);
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px var(--color-primary-glow);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.7rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-primary);
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+      color: white;
+    }
+    .btn-primary:hover {
+      filter: brightness(1.15);
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+    }
+
+    /* Code block generator */
+    .code-wrapper {
+      position: relative;
+      margin-top: 0.5rem;
+    }
+
+    .code-block {
+      background: rgba(7, 10, 19, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      color: #34d399;
+      font-family: monospace;
+      font-size: 0.75rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 180px;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      color: var(--color-text-muted);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+    }
+
+    /* Main Preview Screen */
+    .preview-area {
+      background: rgba(10, 12, 22, 0.4);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .preview-header {
+      background: rgba(7, 10, 19, 0.4);
+      padding: 0.75rem 2rem;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+    }
+
+    .preview-tabs {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--color-text-muted);
+      padding: 0.35rem 0.85rem;
+      cursor: pointer;
+      font-family: var(--font-primary);
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      transition: var(--transition-smooth);
+    }
+
+    .tab-btn.active {
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+    }
+
+    .browser-mock {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: var(--color-bg-dark);
+      display: block;
+    }
+
+    /* Loading indicator inside iframe container */
+    .iframe-loader {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--color-bg-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .iframe-loader.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .spinner {
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 4px solid var(--color-primary-glow);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Notification message */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 200;
+    }
+
+    .toast {
+      background: #1e293b;
+      border-left: 4px solid var(--color-primary);
+      box-shadow: var(--glass-glow);
+      padding: 0.85rem 1.25rem;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: white;
+      font-size: 0.9rem;
+      animation: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes slide-in {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
+        height: auto;
+        overflow: visible;
+      }
+      .sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--glass-border);
+        height: auto;
+        overflow: visible;
+      }
+      .browser-mock {
+        height: 700px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Glows -->
+  <div class="ambient-glow glow-purple"></div>
+  <div class="ambient-glow glow-pink"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <i class="fa-solid fa-layer-group"></i>
+      <h1>Artractive Board Tester</h1>
+    </div>
+    <div class="badge-live" id="api-status">
+      연결 상태 로딩 중...
+    </div>
+  </header>
+
+  <!-- Workspace Container -->
+  <div class="container">
+    
+    <!-- Sidebar Control Panel -->
+    <aside class="sidebar">
+      
+      <!-- Board Type Nav -->
+      <div>
+        <div class="section-title">
+          <i class="fa-solid fa-list-check"></i> 게시판 프리셋
+        </div>
+        <div class="board-nav">
+          <button class="nav-btn active" data-slug="default">
+            <span>자유게시판 (기본)</span>
+            <span class="slug-tag">default</span>
+          </button>
+          <button class="nav-btn" data-slug="notice">
+            <span>공지사항</span>
+            <span class="slug-tag">notice</span>
+          </button>
+          <button class="nav-btn" data-slug="gallery">
+            <span>갤러리</span>
+            <span class="slug-tag">gallery</span>
+          </button>
+          <button class="nav-btn" data-slug="qna">
+            <span>Q&A 질문방</span>
+            <span class="slug-tag">qna</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Settings Panel -->
+      <div class="glass-card">
+        <div class="section-title" style="margin-bottom: 1rem;">
+          <i class="fa-solid fa-sliders"></i> 테스트 설정
+        </div>
+        <div class="form-group">
+          <label for="input-api-key">프로젝트 API Key</label>
+          <input type="text" id="input-api-key" class="form-control" placeholder="art_xxxxxxxx">
+        </div>
+        <div class="form-group">
+          <label for="input-board-slug">커스텀 Board Slug</label>
+          <input type="text" id="input-board-slug" class="form-control" placeholder="default">
+        </div>
+        <button id="apply-settings-btn" class="btn btn-primary" style="margin-top: 1rem;">
+          <i class="fa-solid fa-arrows-rotate"></i> 설정 적용
+        </button>
+      </div>
+
+      <!-- Code Generator -->
+      <div class="glass-card">
+        <div class="section-title" style="margin-bottom: 0.5rem;">
+          <i class="fa-solid fa-code"></i> 위젯 임베드 코드
+        </div>
+        <p style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 0.5rem;">
+          자신의 사이트에 이 게시판을 추가하려면 아래 iframe 코드를 복사하세요.
+        </p>
+        <div class="code-wrapper">
+          <button class="copy-btn" id="copy-code-btn"><i class="fa-regular fa-copy"></i> 복사</button>
+          <pre><code class="code-block" id="generated-code-snippet">Generating...</code></pre>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Preview Area -->
+    <main class="preview-area">
+      <!-- Loading indicator -->
+      <div id="iframe-loading-indicator" class="iframe-loader">
+        <div class="spinner"></div>
+        <p style="color: var(--color-text-muted); font-size: 0.9rem;">게시판 데이터를 불러오는 중...</p>
+      </div>
+      
+      <!-- Browser Mock Info bar -->
+      <div class="preview-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--color-text-muted);">
+          <i class="fa-solid fa-globe"></i>
+          <span id="browser-url-bar">Loading...</span>
+        </div>
+        <div class="preview-tabs">
+          <button class="tab-btn active" id="refresh-frame-btn">
+            <i class="fa-solid fa-rotate-right"></i> 새로고침
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview Iframe -->
+      <iframe id="board-preview-iframe" class="browser-mock" src="about:blank"></iframe>
+    </main>
+
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Dashboard Logic -->
+  <script>
+    const DEFAULT_API_KEY = 'art_a75663ff42df097c882685202d6c89e04d6a68143e9d0695';
+    
+    // State
+    let currentKey = localStorage.getItem('artractive_test_key') || DEFAULT_API_KEY;
+    let currentSlug = 'default';
+    
+    // DOM
+    const iframe = document.getElementById('board-preview-iframe');
+    const iframeLoader = document.getElementById('iframe-loading-indicator');
+    const browserUrlBar = document.getElementById('browser-url-bar');
+    const inputApiKey = document.getElementById('input-api-key');
+    const inputBoardSlug = document.getElementById('input-board-slug');
+    const applySettingsBtn = document.getElementById('apply-settings-btn');
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const generatedCodeSnippet = document.getElementById('generated-code-snippet');
+    const copyCodeBtn = document.getElementById('copy-code-btn');
+    const refreshFrameBtn = document.getElementById('refresh-frame-btn');
+    const apiStatusBadge = document.getElementById('api-status');
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      inputApiKey.value = currentKey;
+      inputBoardSlug.value = currentSlug;
+      
+      updatePreview();
+      checkApiConnection();
+      
+      // Events
+      applySettingsBtn.addEventListener('click', applyCustomSettings);
+      copyCodeBtn.addEventListener('click', copyEmbedCode);
+      refreshFrameBtn.addEventListener('click', () => {
+        showLoader();
+        iframe.contentWindow.location.reload();
+      });
+
+      // Nav Preset Buttons
+      navButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          navButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          
+          currentSlug = btn.getAttribute('data-slug');
+          inputBoardSlug.value = currentSlug;
+          
+          updatePreview();
+        });
+      });
+
+      // Frame load handler
+      iframe.addEventListener('load', () => {
+        hideLoader();
+      });
+    });
+
+    // Check backend API connection
+    async function checkApiConnection() {
+      try {
+        const res = await fetch(`https://apiservice.artractive.pe.kr/api/v1/posts?board_slug=default&page=1&limit=1`, {
+          method: 'GET',
+          headers: { 'x-api-key': currentKey }
+        });
+        if (res.ok) {
+          apiStatusBadge.textContent = 'API 정상 연결됨';
+          apiStatusBadge.style.color = '#10b981';
+          apiStatusBadge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+          apiStatusBadge.style.background = 'rgba(16, 185, 129, 0.12)';
+        } else {
+          throw new Error('Unauthorized');
+        }
+      } catch (e) {
+        apiStatusBadge.textContent = 'API 연결 확인 실패';
+        apiStatusBadge.style.color = '#ef4444';
+        apiStatusBadge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+        apiStatusBadge.style.background = 'rgba(239, 68, 68, 0.12)';
+      }
+    }
+
+    // Loader controls
+    function showLoader() {
+      iframeLoader.classList.add('active');
+    }
+    function hideLoader() {
+      iframeLoader.classList.remove('active');
+    }
+
+    // Apply configurations and reload iframe
+    function updatePreview() {
+      showLoader();
+      
+      // Get the relative location of board.html
+      const boardUrl = `./board.html?slug=${encodeURIComponent(currentSlug)}&key=${encodeURIComponent(currentKey)}`;
+      iframe.src = boardUrl;
+      
+      // Update mock browser address bar
+      browserUrlBar.textContent = `https://tramper2.github.io/BulletinBD/board.html?slug=${currentSlug}`;
+      
+      // Generate code snippet
+      updateCodeSnippet();
+    }
+
+    function applyCustomSettings() {
+      const keyVal = inputApiKey.value.trim();
+      const slugVal = inputBoardSlug.value.trim().toLowerCase();
+      
+      if (!keyVal) {
+        showToast('API Key를 입력해 주세요.', 'danger');
+        return;
+      }
+      
+      currentKey = keyVal;
+      currentSlug = slugVal || 'default';
+      
+      localStorage.setItem('artractive_test_key', currentKey);
+      
+      // Deactivate all preset buttons if slug is a custom one, or active matching one
+      let matched = false;
+      navButtons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-slug') === currentSlug) {
+          btn.classList.add('active');
+          matched = true;
+        }
+      });
+      
+      showToast('설정이 성공적으로 반영되었습니다.', 'success');
+      updatePreview();
+      checkApiConnection();
+    }
+
+    function updateCodeSnippet() {
+      const code = `<iframe src="https://tramper2.github.io/BulletinBD/board.html?slug=${currentSlug}&key=${currentKey}"
+  width="100%"
+  height="800px"
+  frameborder="0"
+  style="border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.35);">
+</iframe>`;
+      generatedCodeSnippet.textContent = code;
+    }
+
+    function copyEmbedCode() {
+      navigator.clipboard.writeText(generatedCodeSnippet.textContent)
+        .then(() => {
+          showToast('임베드 코드가 클립보드에 복사되었습니다.', 'success');
+        })
+        .catch(() => {
+          showToast('복사에 실패했습니다.', 'danger');
+        });
+    }
+
+    function showToast(message, type = 'primary') {
+      const toastContainer = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      
+      if (type === 'success') toast.style.borderLeftColor = '#10b981';
+      if (type === 'danger') toast.style.borderLeftColor = '#ef4444';
+      
+      let icon = '<i class="fa-solid fa-circle-info"></i>';
+      if (type === 'success') icon = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i>';
+      if (type === 'danger') icon = '<i class="fa-solid fa-circle-exclamation" style="color: #ef4444;"></i>';
+      
+      toast.innerHTML = `${icon} <span>${message}</span>`;
+      toastContainer.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.animation = 'none';
+        toast.offsetHeight; /* trigger reflow */
+        toast.style.transition = 'all 0.3s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        toast.addEventListener('transitionend', () => toast.remove());
+      }, 2500);
+    }
+  </script>
+</body>
+</html>

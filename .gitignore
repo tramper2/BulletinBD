@@ -1,0 +1,6 @@
+node_modules/
+dist/
+*.log
+temp_widget.html
+temp_artractive/
+.DS_Store
